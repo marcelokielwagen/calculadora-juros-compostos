@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de Juros Compostos</title>
+<style>
+:root{
+  --verde:#217346; --verde-esc:#185c37; --verde-cl:#e2efe7;
+  --grade:#d0d0d0; --cab:#f0f0f0; --texto:#1f1f1f; --suave:#6b6b6b;
+  --entrada:#fff9d6; --azul:#1b4fd8; --fundo:#e6e6e6; --folha:#fff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font:14px/1.35 Calibri,"Segoe UI",system-ui,sans-serif;color:var(--texto);background:var(--fundo);display:flex;flex-direction:column;min-height:100vh}
+button,select,input{font:inherit}
+
+/* Barra de título e faixa de opções */
+.titulo{background:var(--verde);color:#fff;padding:6px 14px;display:flex;align-items:center;gap:10px;font-size:13px}
+.titulo b{font-weight:600}
+.logo{width:22px;height:22px;background:#fff;color:var(--verde);border-radius:3px;display:grid;place-items:center;font-weight:800;font-size:14px}
+.faixa{background:#f7f7f7;border-bottom:1px solid var(--grade);padding:6px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.faixa button{background:#fff;border:1px solid var(--grade);border-radius:3px;padding:5px 12px;cursor:pointer;color:var(--texto)}
+.faixa button:hover{background:var(--verde-cl);border-color:var(--verde)}
+.faixa .sep{width:1px;height:22px;background:var(--grade);margin:0 4px}
+.faixa label{color:var(--suave);font-size:13px}
+.faixa select{border:1px solid var(--grade);border-radius:3px;padding:4px 6px;background:#fff}
+
+/* Barra de fórmulas */
+.formula{display:flex;align-items:center;background:#fff;border-bottom:1px solid var(--grade);height:28px}
+.formula .nome{width:70px;text-align:center;border-right:1px solid var(--grade);font-weight:600;line-height:28px;flex:none}
+.formula .fx{padding:0 10px;color:var(--suave);font-style:italic;border-right:1px solid var(--grade);line-height:28px;flex:none}
+.formula .txt{padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Área da planilha */
+main{flex:1;overflow:auto;padding:12px;background:var(--folha)}
+.aba{display:none}.aba.ativa{display:block}
+.layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);gap:18px;align-items:start}
+.layout>div{min-width:0}
+@media(max-width:1000px){.layout{grid-template-columns:minmax(0,1fr)}}
+
+table.grade{border-collapse:collapse;width:100%;table-layout:fixed;background:#fff}
+.grade th,.grade td{border:1px solid var(--grade);padding:0;height:26px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grade thead th,.grade th.rn{background:var(--cab);color:var(--suave);font-weight:400;text-align:center;font-size:12px}
+.grade th.rn{width:38px}
+.grade th.sel,.grade th.rn.sel{background:var(--verde-cl);color:var(--verde-esc);font-weight:700}
+.grade td.rot{padding:0 8px;background:#fff}
+.grade td.nota{padding:0 8px;color:var(--suave);font-size:12px}
+.grade tr.sec td{background:var(--verde);color:#fff;font-weight:700;padding:0 8px;letter-spacing:.3px}
+.grade td.cel{background:var(--entrada)}
+.grade td.cel.sel{outline:2px solid var(--verde);outline-offset:-2px}
+.grade td.cel input,.grade td.cel select{width:100%;height:25px;border:0;background:transparent;color:var(--azul);padding:0 8px;outline:0;font-weight:600}
+.grade td.cel select{padding:0 4px;cursor:pointer}
+.grade td.vazio{background:#f7f7f7}
+#hA{width:27%}#hB{width:16%}#hC{width:21%}
+@media(max-width:700px){.col-nota{display:none}#hA{width:42%}#hB{width:23%}#hC{width:35%}
+  .grade td.rot{white-space:normal;line-height:1.15;font-size:13px}.grade tr{height:auto}.grade th.rn{width:28px}
+  .grade td.cel select{font-size:13px;padding:0 2px}}
+
+/* Resumo */
+.resumo td.num{text-align:right;padding:0 8px;font-variant-numeric:tabular-nums}
+.resumo tr.sub td.rot{padding-left:22px;color:var(--suave)}
+.resumo tr.sub td.num{color:var(--suave)}
+.resumo tr.tot td{font-weight:700;background:var(--verde-cl)}
+.resumo tr.big td{font-weight:800;background:var(--verde);color:#fff;height:38px;font-size:17px}
+.resumo tr.neg td.num{color:#b3261e}
+.aviso{margin-top:8px;color:var(--suave);font-size:12px}
+
+/* Evolução */
+.rolagem{max-height:calc(100vh - 250px);min-height:300px;overflow:auto;border:1px solid var(--grade)}
+.evo thead th{position:sticky;top:0;z-index:2}
+.evo thead tr.t2 th{top:26px;background:var(--verde);color:#fff;font-weight:700;font-size:13px}
+.evo td{padding:0 8px;text-align:right;font-variant-numeric:tabular-nums}
+.evo td:first-child,.evo td:nth-child(2){text-align:left}
+.evo tbody tr:nth-child(even) td{background:#fafafa}
+.evo tbody tr:hover td{background:var(--verde-cl)}
+.evo{table-layout:auto;min-width:760px}
+
+/* Gráfico */
+.graf{position:relative;border:1px solid var(--grade);background:#fff}
+canvas{display:block;width:100%;height:420px}
+.dica{position:absolute;pointer-events:none;background:#222;color:#fff;font-size:12px;padding:6px 9px;border-radius:4px;display:none;white-space:nowrap}
+.legenda{display:flex;gap:18px;padding:8px 4px;font-size:13px;flex-wrap:wrap}
+.legenda i{display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-1px}
+
+/* Abas de baixo */
+.abas{background:#f0f0f0;border-top:1px solid var(--grade);display:flex;padding:0 8px;position:sticky;bottom:0}
+.abas button{border:0;background:transparent;padding:8px 18px;cursor:pointer;color:var(--suave);border-top:3px solid transparent}
+.abas button.ativa{background:#fff;color:var(--verde-esc);font-weight:700;border-top-color:var(--verde)}
+.abas button:hover:not(.ativa){background:#e4e4e4}
+
+@media print{
+  .faixa,.formula,.abas,.titulo{display:none}
+  .aba{display:block!important;page-break-inside:avoid}
+  .rolagem{max-height:none;overflow:visible}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<div class="titulo"><span class="logo">X</span><b>Juros Compostos.xlsx</b><span style="opacity:.8">— Calculadora</span></div>
+
+<div class="faixa">
+  <button id="bCsv" title="Baixa a tabela para abrir no Excel">Exportar para Excel (CSV)</button>
+  <button id="bPrint">Imprimir</button>
+  <button id="bLimpar" title="Volta todos os campos ao exemplo inicial">Restaurar exemplo</button>
+  <span class="sep"></span>
+  <label for="exibir">Tabela por:</label>
+  <select id="exibir">
+    <option value="dia">Dia</option><option value="semana">Semana</option>
+    <option value="mes" selected>Mês</option><option value="ano">Ano</option>
+  </select>
+</div>
+
+<div class="formula"><div class="nome" id="nome">B3</div><div class="fx">fx</div><div class="txt" id="fxtxt">Clique em uma célula amarela e mude o valor. O resultado atualiza sozinho.</div></div>
+
+<main>
+  <!-- ABA 1 -->
+  <section class="aba ativa" id="aba1">
+    <div class="layout">
+      <div>
+        <table class="grade" id="params"></table>
+      </div>
+      <div>
+        <table class="grade resumo" id="resumo"></table>
+        <p class="aviso" id="aviso"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABA 2 -->
+  <section class="aba" id="aba2">
+    <div class="rolagem">
+      <table class="grade evo" id="evo">
+        <thead>
+          <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th></tr>
+          <tr class="t2"><th>Período</th><th>Data</th><th>Aportes</th><th>Juros</th><th>Taxas</th><th>Total investido</th><th>Juros acumulados</th><th>Saldo</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ABA 3 -->
+  <section class="aba" id="aba3">
+    <div class="legenda"><span><i style="background:#2f6fd0"></i>Total investido (do seu bolso)</span><span><i style="background:#3aa76d"></i>Juros ganhos</span></div>
+    <div class="graf"><canvas id="canvas"></canvas><div class="dica" id="dica"></div></div>
+  </section>
+</main>
+
+<div class="abas">
+  <button class="ativa" data-aba="aba1">Calculadora</button>
+  <button data-aba="aba2">Evolução</button>
+  <button data-aba="aba3">Gráfico</button>
+</div>
+
+<script src="calculo.js"></script>
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var BRL = function(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); };
+  var PCT = function(v){ return (v*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' %'; };
+
+  var PER_TAXA = [['dia','ao dia'],['semana','à semana'],['mes','ao mês'],['bimestre','ao bimestre'],['trimestre','ao trimestre'],['semestre','ao semestre'],['ano','ao ano']];
+  var PER_CAP  = [['dia','diária'],['semana','semanal'],['mes','mensal'],['trimestre','trimestral'],['semestre','semestral'],['ano','anual']];
+  var PER_APO  = [['dia','diário'],['semana','semanal'],['quinzena','quinzenal'],['mes','mensal'],['bimestre','bimestral'],['trimestre','trimestral'],['semestre','semestral'],['ano','anual']];
+
+  function hoje(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+
+  // Cada linha: r = rótulo, n = campo numérico, s = lista de opções, nota = explicação
+  var SECOES = [
+   {t:'CAPITAL, TAXA E PRAZO', l:[
+    {r:'Capital inicial (R$)', n:{id:'capital',v:10000}, nota:'Quanto você já tem para começar. Pode ser zero.'},
+    {r:'Taxa de juros (%)', n:{id:'taxa',v:1}, s:{id:'taxaPer',op:PER_TAXA,v:'mes'}, nota:'A taxa e de quanto em quanto tempo ela vale (ex.: 1% ao mês).'},
+    {r:'Juros são somados (capitalização)', s:{id:'cap',op:PER_CAP,v:'mes'}, nota:'De quanto em quanto tempo os juros entram no saldo e passam a render também.'},
+    {r:'Tipo de taxa', s:{id:'tipo',op:[['efetiva','Efetiva (equivalente)'],['nominal','Nominal (proporcional)']],v:'efetiva'}, nota:'Efetiva: 12% ao ano rende 12% no ano. Nominal: 12% ao ano capitalizado por mês = 1% ao mês.'},
+    {r:'Prazo', n:{id:'prazo',v:10}, s:{id:'prazoUn',op:[['dias','dias'],['semanas','semanas'],['meses','meses'],['anos','anos']],v:'anos'}, nota:'Por quanto tempo o dinheiro fica aplicado.'},
+    {r:'Data de início', d:{id:'inicio',v:hoje()}, nota:'Só serve para mostrar as datas na tabela.'}
+   ]},
+   {t:'APORTES (DEPÓSITOS REGULARES)', l:[
+    {r:'Valor do aporte (R$)', n:{id:'aporte',v:500}, s:{id:'aporteFreq',op:PER_APO,v:'mes'}, nota:'Quanto você coloca e com que frequência. Zero = sem aportes.'},
+    {r:'Aporte feito no', s:{id:'momento',op:[['fim','fim do período'],['inicio','início do período']],v:'fim'}, nota:'No início do período o aporte já rende desde o primeiro dia.'},
+    {r:'Reajuste anual do aporte (%)', n:{id:'reajuste',v:0}, nota:'Quanto o aporte aumenta a cada 12 meses (ex.: acompanhar o salário).'}
+   ]},
+   {t:'TAXAS DE COBRANÇA (SE FOR TERCEIRIZADO)', l:[
+    {r:'Taxa de administração (% ao ano)', n:{id:'admin',v:0}, nota:'Cobrada todo mês sobre o saldo (1/12 da taxa ao ano). Típica de fundos e gestoras.'},
+    {r:'Taxa de performance (% sobre o lucro)', n:{id:'performance',v:0}, nota:'Cobrada no final sobre o lucro. Ex.: 20% do que passou do valor investido.'},
+    {r:'Taxa de entrada (% de cada depósito)', n:{id:'entrada',v:0}, nota:'Comissão sobre o capital inicial e sobre cada aporte.'},
+    {r:'Taxa fixa por aporte (R$)', n:{id:'fixaAporte',v:0}, nota:'Valor em reais cobrado em cada aporte.'},
+    {r:'Taxa fixa mensal (R$)', n:{id:'fixaMes',v:0}, nota:'Mensalidade cobrada todo mês (conta, plataforma, assessor).'}
+   ]},
+   {t:'IMPOSTO, INFLAÇÃO E META', l:[
+    {r:'Imposto de renda', n:{id:'irFixo',v:15}, s:{id:'ir',op:[['nenhum','Nenhum'],['regressivo','Tabela regressiva'],['fixo','Alíquota fixa (%)']],v:'nenhum'}, nota:'Regressiva: 22,5% até 180 dias, 20% até 360, 17,5% até 720, 15% acima. Alíquota fixa usa o número ao lado.'},
+    {r:'Inflação (% ao ano)', n:{id:'inflacao',v:0}, nota:'Mostra quanto o resultado vale em dinheiro de hoje.'},
+    {r:'Meta (R$)', n:{id:'meta',v:0}, nota:'Opcional: diz em quanto tempo você chega nesse valor.'}
+   ]}
+  ];
+  var IDS_NUM=[], IDS_SEL=[], PADRAO={};
+
+  function montarParametros(){
+    var t=$('params'), h='<thead><tr><th class="rn"></th><th id="hA">A</th><th id="hB">B</th><th id="hC">C</th><th class="col-nota" id="hD">D</th></tr></thead><tbody>';
+    var linha=1;
+    SECOES.forEach(function(sec){
+      h+='<tr class="sec"><th class="rn" data-r="'+linha+'">'+linha+'</th><td colspan="4">'+sec.t+'</td></tr>'; linha++;
+      sec.l.forEach(function(x){
+        h+='<tr><th class="rn" data-r="'+linha+'">'+linha+'</th><td class="rot">'+x.r+'</td>';
+        var cB='<td class="vazio"></td>', cC='<td class="vazio"></td>';
+        if(x.n){ IDS_NUM.push(x.n.id); PADRAO[x.n.id]=x.n.v;
+          cB='<td class="cel" data-c="B" data-r="'+linha+'" data-nota="'+x.nota+'"><input type="number" step="any" min="0" inputmode="decimal" id="'+x.n.id+'" value="'+x.n.v+'"></td>'; }
+        if(x.d){ IDS_NUM.push(x.d.id); PADRAO[x.d.id]=x.d.v;
+          cB='<td class="cel" data-c="B" data-r="'+linha+'" data-nota="'+x.nota+'"><input type="date" id="'+x.d.id+'" value="'+x.d.v+'"></td>'; }
+        if(x.s){ IDS_SEL.push(x.s.id); PADRAO[x.s.id]=x.s.v;
+          var o=x.s.op.map(function(p){return '<option value="'+p[0]+'"'+(p[0]===x.s.v?' selected':'')+'>'+p[1]+'</option>';}).join('');
+          var cel='<td class="cel" data-c="C" data-r="'+linha+'" data-nota="'+x.nota+'"><select id="'+x.s.id+'">'+o+'</select></td>';
+          if(x.n||x.d) cC=cel; else { cB=cel.replace('data-c="C"','data-c="B"'); cC='<td class="vazio"></td>'; } }
+        h+=cB+cC+'<td class="nota col-nota" title="'+x.nota+'">'+x.nota+'</td></tr>'; linha++;
+      });
+    });
+    t.innerHTML=h+'</tbody>';
+  }
+
+  // Seleção de célula (nome da célula + explicação na barra de fórmulas)
+  function selecionar(td){
+    var ant=document.querySelectorAll('#params .sel'); for(var i=0;i<ant.length;i++) ant[i].classList.remove('sel');
+    td.classList.add('sel');
+    var c=td.getAttribute('data-c'), r=td.getAttribute('data-r');
+    $('h'+c).classList.add('sel');
+    var rn=document.querySelector('#params th.rn[data-r="'+r+'"]'); if(rn) rn.classList.add('sel');
+    $('nome').textContent=c+r;
+    var rot=td.parentNode.querySelector('.rot').textContent;
+    $('fxtxt').textContent=rot+' — '+td.getAttribute('data-nota');
+  }
+
+  function ler(){
+    var p={}, n=function(id){ var v=parseFloat($(id).value); return isFinite(v)&&v>=0?v:0; };
+    IDS_NUM.forEach(function(id){ if(id!=='inicio') p[id]=n(id); });
+    IDS_SEL.forEach(function(id){ p[id]=$(id).value; });
+    p.exibir=$('exibir').value; p.inicio=$('inicio').value;
+    return p;
+  }
+
+  var ULTIMO=null, ULTIMOP=null;
+  function dataDe(p,dia){
+    var b=p.inicio?Date.parse(p.inicio+'T00:00:00Z'):NaN; if(isNaN(b)) return '';
+    return new Date(b+dia*86400000).toLocaleDateString('pt-BR',{timeZone:'UTC'});
+  }
+  function duracao(d){
+    var a=Math.floor(d/365), m=Math.floor((d%365)/(365/12)), di=Math.round(d-a*365-m*(365/12));
+    var t=[]; if(a) t.push(a+(a>1?' anos':' ano')); if(m) t.push(m+(m>1?' meses':' mês')); if(di||!t.length) t.push(di+(di===1?' dia':' dias'));
+    return t.join(', ');
+  }
+
+  function desenharResumo(r,p){
+    var L=1, h='<thead><tr><th class="rn"></th><th>A</th><th>B</th></tr></thead><tbody>';
+    function lin(cls,rot,val){ h+='<tr class="'+cls+'"><th class="rn">'+(L++)+'</th><td class="rot">'+rot+'</td><td class="num">'+val+'</td></tr>'; }
+    h+='<tr class="sec"><th class="rn">'+(L++)+'</th><td colspan="2">RESULTADO</td></tr>';
+    lin('','Total que você investiu',BRL(r.investido));
+    lin('','Juros ganhos',BRL(r.jurosBrutos));
+    lin('neg','Taxas de cobrança',r.taxasTotal>0?'− '+BRL(r.taxasTotal):BRL(0));
+    if(r.taxaAdmin>0) lin('sub neg','Administração','− '+BRL(r.taxaAdmin));
+    if(r.taxaEntrada>0) lin('sub neg','Entrada / fixa por aporte','− '+BRL(r.taxaEntrada));
+    if(r.taxaFixaMes>0) lin('sub neg','Fixa mensal','− '+BRL(r.taxaFixaMes));
+    if(r.taxaPerf>0) lin('sub neg','Performance','− '+BRL(r.taxaPerf));
+    lin('tot','Saldo antes do imposto',BRL(r.saldoBruto-r.taxaPerf));
+    lin('neg','Imposto de renda'+(r.aliqIR>0?' ('+(r.aliqIR*100).toLocaleString('pt-BR')+'%)':''),r.ir>0?'− '+BRL(r.ir):BRL(0));
+    lin('big','VALOR FINAL (líquido)',BRL(r.liquido));
+    if(p.inflacao>0) lin('tot','Em dinheiro de hoje (sem inflação)',BRL(r.real));
+    lin('','Rentabilidade total',PCT(r.rentab));
+    lin('','Taxa por capitalização',PCT(r.taxaPorCap));
+    lin('','Prazo total',duracao(r.N));
+    if(p.meta>0) lin('tot','Meta de '+BRL(p.meta), r.metaDia===null?'não atinge no prazo':'em '+duracao(r.metaDia));
+    $('resumo').innerHTML=h+'</tbody>';
+    $('aviso').textContent=r.aviso;
+  }
+
+  function desenharTabela(r,p){
+    var h=[], rot={dia:'Dia',semana:'Semana',mes:'Mês',ano:'Ano'}[r.exibir];
+    r.rows.forEach(function(x){
+      h.push('<tr><td>'+(x.per===0?'Início':rot+' '+x.per)+'</td><td>'+dataDe(p,x.dia)+'</td><td>'+BRL(x.aporte)+'</td><td>'+BRL(x.juros)+'</td><td>'+BRL(x.taxas)+'</td><td>'+BRL(x.inv)+'</td><td>'+BRL(x.jurosAc)+'</td><td><b>'+BRL(x.bal)+'</b></td></tr>');
+    });
+    $('evo').querySelector('tbody').innerHTML=h.join('');
+  }
+
+  // Gráfico de áreas empilhadas (investido + juros)
+  var PTS=[];
+  function abrev(v){ var a=Math.abs(v); if(a>=1e9) return (v/1e9).toLocaleString('pt-BR',{maximumFractionDigits:1})+' bi'; if(a>=1e6) return (v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi'; if(a>=1e3) return (v/1e3).toLocaleString('pt-BR',{maximumFractionDigits:0})+' mil'; return v.toFixed(0); }
+  function desenharGrafico(){
+    if(!ULTIMO) return;
+    var cv=$('canvas'), dpr=window.devicePixelRatio||1, W=cv.clientWidth, H=cv.clientHeight;
+    if(!W) return;
+    cv.width=W*dpr; cv.height=H*dpr;
+    var c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,W,H);
+    var rows=ULTIMO.rows, N=ULTIMO.N, mx=0;
+    rows.forEach(function(x){ if(x.bal>mx) mx=x.bal; if(x.inv>mx) mx=x.inv; });
+    if(mx<=0) mx=1;
+    var passo=Math.pow(10,Math.floor(Math.log10(mx/4))); var u=[1,2,2.5,5,10]; var s=passo;
+    for(var i=0;i<u.length;i++){ if(mx/(passo*u[i])<=5){ s=passo*u[i]; break; } }
+    var topo=Math.ceil(mx/s)*s;
+    var m={l:62,r:14,t:14,b:30}, w=W-m.l-m.r, hh=H-m.t-m.b;
+    var X=function(d){ return m.l+d/N*w; }, Y=function(v){ return m.t+hh-v/topo*hh; };
+    c.font='12px Calibri,Segoe UI,sans-serif'; c.fillStyle='#6b6b6b'; c.strokeStyle='#e3e3e3'; c.lineWidth=1;
+    c.textAlign='right'; c.textBaseline='middle';
+    for(var v=0;v<=topo+1e-9;v+=s){ var y=Math.round(Y(v))+.5; c.beginPath(); c.moveTo(m.l,y); c.lineTo(W-m.r,y); c.stroke(); c.fillText(abrev(v),m.l-8,y); }
+    c.textAlign='center'; c.textBaseline='top';
+    var anos=N/365, tick=anos>=1.5, qt=tick?Math.max(1,Math.ceil(anos/8)):0;
+    if(tick){ for(var a=0;a<=anos;a+=qt){ c.fillText(a+' a',X(a*365),H-m.b+8); } }
+    else { for(var k=0;k<=4;k++){ var dd=N*k/4; c.fillText(Math.round(dd)+' d',X(dd),H-m.b+8); } }
+    function area(topFn,base,cor){
+      c.beginPath(); c.moveTo(X(rows[0].dia),Y(base(rows[0])));
+      rows.forEach(function(x){ c.lineTo(X(x.dia),Y(topFn(x))); });
+      for(var i=rows.length-1;i>=0;i--) c.lineTo(X(rows[i].dia),Y(base(rows[i])));
+      c.closePath(); c.fillStyle=cor; c.fill();
+    }
+    area(function(x){return x.bal;},function(x){return Math.min(x.inv,x.bal);},'#3aa76d');
+    area(function(x){return Math.min(x.inv,x.bal);},function(){return 0;},'#2f6fd0');
+    PTS=rows.map(function(x){ return {x:X(x.dia),r:x}; });
+  }
+  function dica(e){
+    var cv=$('canvas'), b=cv.getBoundingClientRect(), mx=e.clientX-b.left, best=null, dm=1e9;
+    PTS.forEach(function(p){ var d=Math.abs(p.x-mx); if(d<dm){dm=d;best=p;} });
+    var t=$('dica'); if(!best){ t.style.display='none'; return; }
+    var r=best.r, rot={dia:'Dia',semana:'Semana',mes:'Mês',ano:'Ano'}[ULTIMO.exibir];
+    t.innerHTML='<b>'+(r.per===0?'Início':rot+' '+r.per)+'</b> · '+dataDe(ULTIMOP,r.dia)+'<br>Investido: '+BRL(r.inv)+'<br>Juros: '+BRL(r.jurosAc)+'<br>Saldo: '+BRL(r.bal);
+    t.style.display='block';
+    var left=Math.min(best.x+12,cv.clientWidth-t.offsetWidth-6); t.style.left=left+'px'; t.style.top='20px';
+  }
+
+  var guardarT=null;
+  function recalcular(){
+    var p=ler(); ULTIMOP=p; ULTIMO=simular(p);
+    desenharResumo(ULTIMO,p); desenharTabela(ULTIMO,p);
+    if($('aba3').classList.contains('ativa')) desenharGrafico();
+    clearTimeout(guardarT); guardarT=setTimeout(function(){
+      try{ localStorage.setItem('jurosCompostos',JSON.stringify(p)); }catch(e){}
+    },300);
+  }
+
+  function aplicar(p){
+    IDS_NUM.concat(IDS_SEL).forEach(function(id){ if(p[id]!==undefined) $(id).value=p[id]; });
+    if(p.exibir) $('exibir').value=p.exibir;
+  }
+
+  function csv(){
+    if(!ULTIMO) return;
+    var rot={dia:'Dia',semana:'Semana',mes:'Mês',ano:'Ano'}[ULTIMO.exibir];
+    var f=function(v){ return v.toFixed(2).replace('.',','); };
+    var l=['Período;Data;Aportes;Juros;Taxas;Total investido;Juros acumulados;Saldo'];
+    ULTIMO.rows.forEach(function(x){ l.push([x.per===0?'Início':rot+' '+x.per,dataDe(ULTIMOP,x.dia),f(x.aporte),f(x.juros),f(x.taxas),f(x.inv),f(x.jurosAc),f(x.bal)].join(';')); });
+    l.push(''); l.push('Valor final (líquido);'+f(ULTIMO.liquido));
+    var blob=new Blob(['﻿'+l.join('\r\n')],{type:'text/csv;charset=utf-8'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='juros-compostos.csv';
+    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+  }
+
+  // Início
+  montarParametros();
+  try{ var salvo=JSON.parse(localStorage.getItem('jurosCompostos')||'null'); if(salvo) aplicar(salvo); }catch(e){}
+
+  $('params').addEventListener('focusin',function(e){ var td=e.target.closest('td.cel'); if(td) selecionar(td); });
+  $('params').addEventListener('input',recalcular);
+  $('params').addEventListener('change',recalcular);
+  $('exibir').addEventListener('change',recalcular);
+  $('bCsv').addEventListener('click',csv);
+  $('bPrint').addEventListener('click',function(){ window.print(); });
+  $('bLimpar').addEventListener('click',function(){ if(confirm('Voltar todos os campos ao exemplo inicial?')){ aplicar(PADRAO); $('exibir').value='mes'; recalcular(); } });
+  document.querySelectorAll('.abas button').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.abas button,.aba').forEach(function(x){ x.classList.remove('ativa'); });
+      b.classList.add('ativa'); $(b.getAttribute('data-aba')).classList.add('ativa');
+      if(b.getAttribute('data-aba')==='aba3') desenharGrafico();
+    });
+  });
+  $('canvas').addEventListener('mousemove',dica);
+  $('canvas').addEventListener('mouseleave',function(){ $('dica').style.display='none'; });
+  window.addEventListener('resize',desenharGrafico);
+  recalcular();
+})();
+</script>
+</body>
+</html>
