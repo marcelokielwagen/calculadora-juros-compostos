@@ -5,11 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#217346">
 <title>Calculadora de Juros Compostos</title>
+<script>
+(function(){var t=null;try{t=localStorage.getItem('jurosTema')}catch(e){}
+if(t!=='claro'&&t!=='escuro')t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'escuro':'claro';
+document.documentElement.setAttribute('data-tema',t);})();
+</script>
 <style>
 :root{
-  --verde:#217346; --verde-esc:#185c37; --verde-cl:#e2efe7;
-  --grade:#d4d4d4; --texto:#1f1f1f; --suave:#6b6b6b;
-  --entrada:#fff9d6; --azul:#1b4fd8; --fundo:#f1f1f1;
+  --verde:#217346; --verde-esc:#185c37; --verde-txt:#217346; --verde-cl:#e2efe7;
+  --grade:#d4d4d4; --texto:#1f1f1f; --suave:#6b6b6b; --cartao:#fff; --linha:#ececec; --zebra:#fafafa;
+  --entrada:#fff9d6; --bordaE:#e6dca0; --azul:#1b4fd8; --fundo:#f1f1f1; --verm:#b3261e;
+  color-scheme:light;
+}
+:root[data-tema="escuro"]{
+  --verde:#1f7a4b; --verde-esc:#7fdca8; --verde-txt:#6fdba0; --verde-cl:#1f3a2c;
+  --grade:#36403a; --texto:#e9eee9; --suave:#9fb0a6; --cartao:#1b211e; --linha:#2a322d; --zebra:#202723;
+  --entrada:#2b2914; --bordaE:#5b5421; --azul:#9db9ff; --fundo:#101412; --verm:#ff8f86;
+  color-scheme:dark;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
@@ -26,74 +38,107 @@ button,input{font:inherit}
 .aba{display:none}.aba.ativa{display:block}
 
 /* Cartões no estilo "planilha" */
-.cartao{background:#fff;border:1px solid var(--grade);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.cartao{background:var(--cartao);border:1px solid var(--grade);border-radius:10px;margin-bottom:14px;overflow:hidden}
 .cartao h2{margin:0;background:var(--verde);color:#fff;font-size:14px;letter-spacing:.5px;padding:9px 14px}
-.campo{padding:12px 14px;border-top:1px solid #ececec}
+.campo{padding:12px 14px;border-top:1px solid var(--linha)}
 .campo:first-of-type{border-top:0}
 .campo label,.campo .rot{display:block;font-weight:700;margin-bottom:8px}
 .campo .dica-txt{display:block;font-weight:400;color:var(--suave);font-size:14px;margin-top:2px}
 
 /* Campo numérico grande com botões - e + */
 .num{display:flex;align-items:stretch;gap:8px}
-.num .caixa{flex:1;display:flex;align-items:center;background:var(--entrada);border:2px solid #e6dca0;border-radius:10px;padding:0 12px;min-width:0}
+.num .caixa{flex:1;display:flex;align-items:center;background:var(--entrada);border:2px solid var(--bordaE);border-radius:10px;padding:0 12px;min-width:0}
 .num .caixa:focus-within{border-color:var(--verde)}
 .num .pref,.num .suf{color:var(--suave);font-weight:700}
 .num input{flex:1;min-width:0;width:100%;border:0;background:transparent;color:var(--azul);font-size:24px;font-weight:700;padding:10px 6px;outline:0}
-.passo{width:54px;border:2px solid var(--verde);background:#fff;color:var(--verde);border-radius:10px;font-size:28px;font-weight:700;cursor:pointer;line-height:1}
+.passo{width:54px;border:2px solid var(--verde);background:var(--cartao);color:var(--verde-txt);border-radius:10px;font-size:28px;font-weight:700;cursor:pointer;line-height:1}
 .passo:active{background:var(--verde-cl)}
 
 /* Botões de escolha */
 .opcoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.opcoes button{flex:1 1 calc(33% - 8px);min-width:84px;min-height:48px;border:2px solid var(--grade);background:#fff;color:var(--texto);border-radius:10px;font-weight:600;cursor:pointer;padding:6px 8px}
+.opcoes button{flex:1 1 calc(33% - 8px);min-width:84px;min-height:48px;border:2px solid var(--grade);background:var(--cartao);color:var(--texto);border-radius:10px;font-weight:600;cursor:pointer;padding:6px 8px}
 .opcoes button.on{background:var(--verde);border-color:var(--verde);color:#fff}
 .opcoes button:active{transform:scale(.97)}
 .opcoes.q4 button{flex-basis:calc(25% - 8px);min-width:70px}
-.campo input[type=date]{width:100%;min-height:50px;border:2px solid #e6dca0;background:var(--entrada);color:var(--azul);font-size:20px;font-weight:700;border-radius:10px;padding:0 12px}
+.campo input[type=date]{width:100%;min-height:50px;border:2px solid var(--bordaE);background:var(--entrada);color:var(--azul);font-size:20px;font-weight:700;border-radius:10px;padding:0 12px}
 
 /* Botões grandes de ação */
 .acoes{display:flex;gap:10px;flex-wrap:wrap}
-.acoes button{flex:1;min-height:52px;border-radius:10px;border:2px solid var(--verde);background:#fff;color:var(--verde-esc);font-weight:700;cursor:pointer;padding:0 14px}
+.acoes button{flex:1;min-height:52px;border-radius:10px;border:2px solid var(--verde);background:var(--cartao);color:var(--verde-esc);font-weight:700;cursor:pointer;padding:0 14px}
 .acoes button.cheio{background:var(--verde);color:#fff}
 
 /* Resumo */
 table{border-collapse:collapse;width:100%}
-.resumo td{padding:11px 14px;border-top:1px solid #ececec}
+.resumo td{padding:11px 14px;border-top:1px solid var(--linha)}
 .resumo tr:first-child td{border-top:0}
 .resumo td:last-child{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
 .resumo tr.verde td{background:var(--verde-cl)}
-.resumo tr.neg td:last-child{color:#b3261e}
+.resumo tr.neg td:last-child{color:var(--verm)}
 .aviso{color:var(--suave);font-size:14px;margin:6px 4px 0}
 
 /* Evolução */
-.evo-wrap{background:#fff;border:1px solid var(--grade);border-radius:10px;overflow:hidden}
+.evo-wrap{background:var(--cartao);border:1px solid var(--grade);border-radius:10px;overflow:hidden}
 .evo th{background:var(--verde);color:#fff;font-size:13px;padding:9px 8px;text-align:right;position:sticky;top:0}
 .evo th:first-child{text-align:left}
-.evo td{padding:9px 8px;border-top:1px solid #ececec;text-align:right;font-size:15px;font-variant-numeric:tabular-nums}
+.evo td{padding:9px 8px;border-top:1px solid var(--linha);text-align:right;font-size:15px;font-variant-numeric:tabular-nums}
 .evo td:first-child{text-align:left;font-weight:600;line-height:1.2}
 .evo td:first-child small{display:block;font-weight:400;color:var(--suave);font-size:12px}
-.evo tbody tr:nth-child(even) td{background:#fafafa}
+.evo tbody tr:nth-child(even) td{background:var(--zebra)}
 .evo td:last-child{font-weight:700}
 
 /* Gráfico */
-.graf{position:relative;background:#fff;border:1px solid var(--grade);border-radius:10px;overflow:hidden}
+.graf{position:relative;background:var(--cartao);border:1px solid var(--grade);border-radius:10px;overflow:hidden}
 canvas{display:block;width:100%;height:320px;touch-action:pan-y}
 .legenda{display:flex;gap:16px;flex-wrap:wrap;font-size:15px;margin:2px 4px 10px}
 .legenda i{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:6px;vertical-align:-2px}
 .dica{position:absolute;top:8px;pointer-events:none;background:#222;color:#fff;font-size:14px;padding:8px 10px;border-radius:8px;display:none;white-space:nowrap}
 
 /* Abas fixas embaixo */
-.abas{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#fff;border-top:1px solid var(--grade);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+.abas{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--cartao);border-top:1px solid var(--grade);display:flex;padding-bottom:env(safe-area-inset-bottom)}
 .abas button{flex:1;border:0;background:transparent;min-height:62px;font-size:15px;font-weight:600;color:var(--suave);cursor:pointer;border-top:4px solid transparent}
 .abas button b{display:block;font-size:22px;line-height:1.1}
 .abas button.ativa{color:var(--verde-esc);border-top-color:var(--verde);background:var(--verde-cl)}
+
+/* Ícones e seletor de tema */
+.ic{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-.2em}
+.cartao h2{display:flex;align-items:center;gap:8px}
+.cartao h2 .ic{width:18px;height:18px}
+.abas button .ic{width:26px;height:26px;display:block;margin:0 auto 2px}
+.acoes button{display:flex;align-items:center;justify-content:center;gap:8px}
+.tema{display:flex;background:rgba(0,0,0,.25);border-radius:999px;padding:3px}
+.tema button{border:0;background:transparent;color:#fff;opacity:.75;display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700;padding:6px 11px;border-radius:999px;cursor:pointer}
+.tema button.on{background:#fff;color:#185c37;opacity:1}
+.tema .ic{width:16px;height:16px}
 
 @media(min-width:900px){.pagina{max-width:760px}}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-calc" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="8.01" y2="11"/><line x1="12" y1="11" x2="12.01" y2="11"/><line x1="16" y1="11" x2="16.01" y2="11"/><line x1="8" y1="15" x2="8.01" y2="15"/><line x1="12" y1="15" x2="12.01" y2="15"/><line x1="16" y1="15" x2="16.01" y2="15"/><line x1="8" y1="19" x2="16" y2="19"/></symbol>
+<symbol id="i-tabela" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></symbol>
+<symbol id="i-grafico" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></symbol>
+<symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4.2" y1="4.2" x2="6" y2="6"/><line x1="18" y1="18" x2="19.8" y2="19.8"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4.2" y1="19.8" x2="6" y2="18"/><line x1="18" y1="6" x2="19.8" y2="4.2"/></symbol>
+<symbol id="i-lua" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+<symbol id="i-dinheiro" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+<symbol id="i-relogio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+<symbol id="i-repetir" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></symbol>
+<symbol id="i-percent" viewBox="0 0 24 24"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></symbol>
+<symbol id="i-lista" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></symbol>
+<symbol id="i-baixar" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+<symbol id="i-voltar" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></symbol>
+<symbol id="i-calendario" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+</defs></svg>
+
 
 <header class="topo">
-  <div class="linha1"><span>Valor final (líquido)</span><span id="prazoTopo"></span></div>
+  <div class="linha1">
+    <span>Valor final (líquido) · <span id="prazoTopo"></span></span>
+    <div class="tema" role="group" aria-label="Aparência">
+      <button data-tema="claro" aria-label="Tema claro"><svg class="ic"><use href="#i-sol"/></svg>Claro</button>
+      <button data-tema="escuro" aria-label="Tema escuro"><svg class="ic"><use href="#i-lua"/></svg>Escuro</button>
+    </div>
+  </div>
   <div class="valor" id="vFinal">R$ 0,00</div>
   <div class="sub" id="vSub"></div>
 </header>
@@ -104,7 +149,7 @@ canvas{display:block;width:100%;height:320px;touch-action:pan-y}
   <section class="aba ativa" id="aba1">
 
     <div class="cartao">
-      <h2>CAPITAL E TAXA</h2>
+      <h2><svg class="ic"><use href="#i-dinheiro"/></svg>CAPITAL E TAXA</h2>
       <div class="campo">
         <label for="capital">Quanto você já tem (capital inicial)</label>
         <div class="num"><button class="passo" data-alvo="capital" data-passo="-1000" aria-label="menos">−</button>
@@ -131,7 +176,7 @@ canvas{display:block;width:100%;height:320px;touch-action:pan-y}
     </div>
 
     <div class="cartao">
-      <h2>PRAZO</h2>
+      <h2><svg class="ic"><use href="#i-relogio"/></svg>PRAZO</h2>
       <div class="campo">
         <label for="prazo">Por quanto tempo</label>
         <div class="num"><button class="passo" data-alvo="prazo" data-passo="-1" aria-label="menos">−</button>
@@ -142,13 +187,13 @@ canvas{display:block;width:100%;height:320px;touch-action:pan-y}
         </div>
       </div>
       <div class="campo">
-        <label for="inicio">Data de início <span class="dica-txt">Só para mostrar as datas na tabela.</span></label>
+        <label for="inicio"><svg class="ic"><use href="#i-calendario"/></svg> Data de início <span class="dica-txt">Só para mostrar as datas na tabela.</span></label>
         <input id="inicio" type="date">
       </div>
     </div>
 
     <div class="cartao">
-      <h2>APORTES (DEPÓSITOS REGULARES)</h2>
+      <h2><svg class="ic"><use href="#i-repetir"/></svg>APORTES (DEPÓSITOS REGULARES)</h2>
       <div class="campo">
         <label for="aporte">Quanto você vai depositar <span class="dica-txt">Deixe 0 se não vai depositar mais nada.</span></label>
         <div class="num"><button class="passo" data-alvo="aporte" data-passo="-100" aria-label="menos">−</button>
@@ -163,7 +208,7 @@ canvas{display:block;width:100%;height:320px;touch-action:pan-y}
     </div>
 
     <div class="cartao">
-      <h2>IMPOSTO DE RENDA</h2>
+      <h2><svg class="ic"><use href="#i-percent"/></svg>IMPOSTO DE RENDA</h2>
       <div class="campo">
         <span class="rot">Descontar imposto sobre o lucro? <span class="dica-txt">Regressiva: 22,5% até 180 dias, 20% até 360, 17,5% até 720 e 15% acima.</span></span>
         <div class="opcoes" data-grupo="ir">
@@ -179,14 +224,14 @@ canvas{display:block;width:100%;height:320px;touch-action:pan-y}
     </div>
 
     <div class="cartao">
-      <h2>RESUMO</h2>
+      <h2><svg class="ic"><use href="#i-lista"/></svg>RESUMO</h2>
       <table class="resumo" id="resumo"></table>
     </div>
     <p class="aviso" id="aviso"></p>
 
     <div class="acoes">
-      <button class="cheio" id="bVer">Ver tabela mês a mês</button>
-      <button id="bLimpar">Restaurar exemplo</button>
+      <button class="cheio" id="bVer"><svg class="ic"><use href="#i-tabela"/></svg>Ver tabela mês a mês</button>
+      <button id="bLimpar"><svg class="ic"><use href="#i-voltar"/></svg>Restaurar exemplo</button>
     </div>
   </section>
 
@@ -200,7 +245,7 @@ canvas{display:block;width:100%;height:320px;touch-action:pan-y}
         </div>
       </div>
     </div>
-    <div class="acoes" style="margin-bottom:12px"><button id="bCsv">Baixar para o Excel (CSV)</button></div>
+    <div class="acoes" style="margin-bottom:12px"><button id="bCsv"><svg class="ic"><use href="#i-baixar"/></svg>Baixar para o Excel (CSV)</button></div>
     <div class="evo-wrap">
       <table class="evo" id="evo">
         <thead><tr><th>Período</th><th>Investido</th><th>Juros</th><th>Saldo</th></tr></thead>
@@ -218,9 +263,9 @@ canvas{display:block;width:100%;height:320px;touch-action:pan-y}
 </div>
 
 <nav class="abas">
-  <button class="ativa" data-aba="aba1"><b>🧮</b>Calcular</button>
-  <button data-aba="aba2"><b>📋</b>Tabela</button>
-  <button data-aba="aba3"><b>📈</b>Gráfico</button>
+  <button class="ativa" data-aba="aba1"><svg class="ic"><use href="#i-calc"/></svg>Calcular</button>
+  <button data-aba="aba2"><svg class="ic"><use href="#i-tabela"/></svg>Tabela</button>
+  <button data-aba="aba3"><svg class="ic"><use href="#i-grafico"/></svg>Gráfico</button>
 </nav>
 
 <script src="calculo.js"></script>
@@ -308,7 +353,7 @@ canvas{display:block;width:100%;height:320px;touch-action:pan-y}
     var topo=Math.ceil(mx/s)*s;
     var m={l:54,r:12,t:12,b:28}, w=W-m.l-m.r, hh=H-m.t-m.b;
     var X=function(d){ return m.l+d/N*w; }, Y=function(v){ return m.t+hh-v/topo*hh; };
-    c.font='13px Calibri,Segoe UI,sans-serif'; c.fillStyle='#6b6b6b'; c.strokeStyle='#e3e3e3'; c.lineWidth=1;
+    var cs=getComputedStyle(document.documentElement); c.font='13px Calibri,Segoe UI,sans-serif'; c.fillStyle=cs.getPropertyValue('--suave').trim(); c.strokeStyle=cs.getPropertyValue('--grade').trim(); c.lineWidth=1;
     c.textAlign='right'; c.textBaseline='middle';
     for(var v=0;v<=topo+1e-9;v+=s){ var y=Math.round(Y(v))+.5; c.beginPath(); c.moveTo(m.l,y); c.lineTo(W-m.r,y); c.stroke(); c.fillText(abrev(v),m.l-6,y); }
     c.textAlign='center'; c.textBaseline='top';
@@ -363,6 +408,20 @@ canvas{display:block;width:100%;height:320px;touch-action:pan-y}
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='juros-compostos.csv';
     document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
   }
+
+  function marcarTema(){
+    var t=document.documentElement.getAttribute('data-tema');
+    document.querySelectorAll('.tema button').forEach(function(b){ b.classList.toggle('on',b.getAttribute('data-tema')===t); });
+    var m=document.querySelector('meta[name=theme-color]'); if(m) m.setAttribute('content',t==='escuro'?'#1f7a4b':'#217346');
+  }
+  document.querySelectorAll('.tema button').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.documentElement.setAttribute('data-tema',b.getAttribute('data-tema'));
+      try{ localStorage.setItem('jurosTema',b.getAttribute('data-tema')); }catch(e){}
+      marcarTema(); desenharGrafico();
+    });
+  });
+  marcarTema();
 
   // Início
   aplicar(PADRAO);
