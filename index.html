@@ -85,6 +85,7 @@ table{border-collapse:collapse;width:100%}
 .evo td:first-child small{display:block;font-weight:400;color:var(--suave);font-size:12px}
 .evo tbody tr:nth-child(even) td{background:var(--zebra)}
 .evo td:last-child{font-weight:700}
+@media(max-width:700px){.evo .col-saldo{display:none}.evo th:nth-child(3),.evo td:nth-child(3){font-weight:700}}
 
 /* Gráfico */
 .graf{position:relative;background:var(--cartao);border:1px solid var(--grade);border-radius:10px;overflow:hidden}
@@ -248,7 +249,7 @@ canvas{display:block;width:100%;height:320px;touch-action:pan-y}
     <div class="acoes" style="margin-bottom:12px"><button id="bCsv"><svg class="ic"><use href="#i-baixar"/></svg>Baixar para o Excel (CSV)</button></div>
     <div class="evo-wrap">
       <table class="evo" id="evo">
-        <thead><tr><th>Período</th><th>Investido</th><th>Juros</th><th>Saldo</th></tr></thead>
+        <thead><tr><th>Período</th><th>Investido</th><th>Juros</th><th class="col-saldo">Saldo</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -331,7 +332,7 @@ canvas{display:block;width:100%;height:320px;touch-action:pan-y}
   function desenharTabela(r,p){
     var h=[], rot=ROT[r.exibir];
     r.rows.forEach(function(x){
-      h.push('<tr><td>'+(x.per===0?'Início':rot+' '+x.per)+'<small>'+dataDe(p,x.dia)+'</small></td><td>'+BRL(x.inv)+'</td><td>'+BRL(x.jurosAc)+'</td><td>'+BRL(x.bal)+'</td></tr>');
+      h.push('<tr><td>'+(x.per===0?'Início':rot+' '+x.per)+'<small>'+dataDe(p,x.dia)+'</small></td><td>'+BRL(x.base)+'</td><td>'+BRL(x.juros)+'</td><td class="col-saldo">'+BRL(x.bal)+'</td></tr>');
     });
     $('evo').querySelector('tbody').innerHTML=h.join('');
   }

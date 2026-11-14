@@ -52,13 +52,16 @@ function simular(p) {
     bal = Math.max(0, bal + valor - fee);
     taxas += fee; tEntrada += fee;
   }
+  var prevBal = 0;
   function linha(d) {
     rows.push({
       per: idx++, dia: d,
+      base: prevBal + (inv - prev.inv),   // saldo do período anterior + aportes do período
       aporte: inv - prev.inv, juros: juros - prev.juros, taxas: taxas - prev.taxas,
       inv: inv, jurosAc: juros, bal: bal
     });
     prev = { inv: inv, juros: juros, taxas: taxas };
+    prevBal = bal;
   }
 
   for (var d = 0; d <= N; d++) {
