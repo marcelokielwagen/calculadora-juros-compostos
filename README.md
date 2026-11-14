@@ -1,20 +1,17 @@
 # Calculadora de Juros Compostos
 
-Calculadora com cara de planilha do Excel. Abre direto no navegador (computador ou celular), sem instalar nada. O resultado atualiza sozinho enquanto você muda os números.
+Calculadora feita para o celular: campos grandes, botões para escolher as opções e o valor final sempre visível no topo. O resultado atualiza sozinho enquanto você muda os números. Abre direto no navegador, sem instalar nada.
 
 | Opção | O que dá para escolher |
 |---|---|
-| Taxa de juros | ao dia, semana, mês, bimestre, trimestre, semestre ou ano |
-| Capitalização | diária, semanal, mensal, trimestral, semestral ou anual |
-| Tipo de taxa | efetiva (equivalente) ou nominal (proporcional) |
+| Capital inicial | quanto você já tem (botões − e +) |
+| Taxa de juros | ao dia, semana, mês, trimestre, semestre ou ano |
+| Os juros são somados | todo dia, semana, mês, trimestre, semestre ou ano |
 | Prazo | em dias, semanas, meses ou anos |
-| Aportes | valor e frequência (diário até anual), no início ou no fim do período, com reajuste anual |
-| Taxas de cobrança (terceirizado) | administração (% a.a.), performance (% do lucro), entrada (% de cada depósito), fixa por aporte (R$) e fixa mensal (R$) |
-| Imposto de renda | nenhum, tabela regressiva (22,5% a 15%) ou alíquota fixa |
-| Inflação | mostra o valor final em dinheiro de hoje |
-| Meta | diz em quanto tempo você chega no valor desejado |
+| Aportes | valor e frequência (todo dia até todo ano) |
+| Imposto de renda | não, tabela regressiva (22,5% a 15%) ou percentual fixo |
 
-Três abas, como no Excel: **Calculadora** (campos amarelos + resultado), **Evolução** (tabela por dia, semana, mês ou ano, com opção de exportar para o Excel) e **Gráfico** (investido x juros).
+Três abas embaixo: **Calcular**, **Tabela** (por dia, semana, mês ou ano, com opção de baixar para o Excel) e **Gráfico** (do seu bolso x juros ganhos).
 
 ## Arquivos
 

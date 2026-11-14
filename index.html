@@ -2,141 +2,208 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#217346">
 <title>Calculadora de Juros Compostos</title>
 <style>
 :root{
   --verde:#217346; --verde-esc:#185c37; --verde-cl:#e2efe7;
-  --grade:#d0d0d0; --cab:#f0f0f0; --texto:#1f1f1f; --suave:#6b6b6b;
-  --entrada:#fff9d6; --azul:#1b4fd8; --fundo:#e6e6e6; --folha:#fff;
+  --grade:#d4d4d4; --texto:#1f1f1f; --suave:#6b6b6b;
+  --entrada:#fff9d6; --azul:#1b4fd8; --fundo:#f1f1f1;
 }
-*{box-sizing:border-box}
-html,body{margin:0;height:100%}
-body{font:14px/1.35 Calibri,"Segoe UI",system-ui,sans-serif;color:var(--texto);background:var(--fundo);display:flex;flex-direction:column;min-height:100vh}
-button,select,input{font:inherit}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{font:17px/1.35 Calibri,"Segoe UI",system-ui,sans-serif;color:var(--texto);background:var(--fundo);padding-bottom:84px}
+button,input{font:inherit}
 
-/* Barra de título e faixa de opções */
-.titulo{background:var(--verde);color:#fff;padding:6px 14px;display:flex;align-items:center;gap:10px;font-size:13px}
-.titulo b{font-weight:600}
-.logo{width:22px;height:22px;background:#fff;color:var(--verde);border-radius:3px;display:grid;place-items:center;font-weight:800;font-size:14px}
-.faixa{background:#f7f7f7;border-bottom:1px solid var(--grade);padding:6px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.faixa button{background:#fff;border:1px solid var(--grade);border-radius:3px;padding:5px 12px;cursor:pointer;color:var(--texto)}
-.faixa button:hover{background:var(--verde-cl);border-color:var(--verde)}
-.faixa .sep{width:1px;height:22px;background:var(--grade);margin:0 4px}
-.faixa label{color:var(--suave);font-size:13px}
-.faixa select{border:1px solid var(--grade);border-radius:3px;padding:4px 6px;background:#fff}
+/* Topo: título + valor final sempre visível */
+.topo{position:sticky;top:0;z-index:5;background:var(--verde);color:#fff;padding:10px 16px 12px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.topo .linha1{display:flex;justify-content:space-between;align-items:center;font-size:14px;opacity:.9}
+.topo .valor{font-size:30px;font-weight:800;letter-spacing:.2px;line-height:1.15;font-variant-numeric:tabular-nums}
+.topo .sub{font-size:14px;opacity:.9;font-variant-numeric:tabular-nums}
 
-/* Barra de fórmulas */
-.formula{display:flex;align-items:center;background:#fff;border-bottom:1px solid var(--grade);height:28px}
-.formula .nome{width:70px;text-align:center;border-right:1px solid var(--grade);font-weight:600;line-height:28px;flex:none}
-.formula .fx{padding:0 10px;color:var(--suave);font-style:italic;border-right:1px solid var(--grade);line-height:28px;flex:none}
-.formula .txt{padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-/* Área da planilha */
-main{flex:1;overflow:auto;padding:12px;background:var(--folha)}
+.pagina{max-width:640px;margin:0 auto;padding:12px 14px}
 .aba{display:none}.aba.ativa{display:block}
-.layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);gap:18px;align-items:start}
-.layout>div{min-width:0}
-@media(max-width:1000px){.layout{grid-template-columns:minmax(0,1fr)}}
 
-table.grade{border-collapse:collapse;width:100%;table-layout:fixed;background:#fff}
-.grade th,.grade td{border:1px solid var(--grade);padding:0;height:26px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.grade thead th,.grade th.rn{background:var(--cab);color:var(--suave);font-weight:400;text-align:center;font-size:12px}
-.grade th.rn{width:38px}
-.grade th.sel,.grade th.rn.sel{background:var(--verde-cl);color:var(--verde-esc);font-weight:700}
-.grade td.rot{padding:0 8px;background:#fff}
-.grade td.nota{padding:0 8px;color:var(--suave);font-size:12px}
-.grade tr.sec td{background:var(--verde);color:#fff;font-weight:700;padding:0 8px;letter-spacing:.3px}
-.grade td.cel{background:var(--entrada)}
-.grade td.cel.sel{outline:2px solid var(--verde);outline-offset:-2px}
-.grade td.cel input,.grade td.cel select{width:100%;height:25px;border:0;background:transparent;color:var(--azul);padding:0 8px;outline:0;font-weight:600}
-.grade td.cel select{padding:0 4px;cursor:pointer}
-.grade td.vazio{background:#f7f7f7}
-#hA{width:27%}#hB{width:16%}#hC{width:21%}
-@media(max-width:700px){.col-nota{display:none}#hA{width:42%}#hB{width:23%}#hC{width:35%}
-  .grade td.rot{white-space:normal;line-height:1.15;font-size:13px}.grade tr{height:auto}.grade th.rn{width:28px}
-  .grade td.cel select{font-size:13px;padding:0 2px}}
+/* Cartões no estilo "planilha" */
+.cartao{background:#fff;border:1px solid var(--grade);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.cartao h2{margin:0;background:var(--verde);color:#fff;font-size:14px;letter-spacing:.5px;padding:9px 14px}
+.campo{padding:12px 14px;border-top:1px solid #ececec}
+.campo:first-of-type{border-top:0}
+.campo label,.campo .rot{display:block;font-weight:700;margin-bottom:8px}
+.campo .dica-txt{display:block;font-weight:400;color:var(--suave);font-size:14px;margin-top:2px}
+
+/* Campo numérico grande com botões - e + */
+.num{display:flex;align-items:stretch;gap:8px}
+.num .caixa{flex:1;display:flex;align-items:center;background:var(--entrada);border:2px solid #e6dca0;border-radius:10px;padding:0 12px;min-width:0}
+.num .caixa:focus-within{border-color:var(--verde)}
+.num .pref,.num .suf{color:var(--suave);font-weight:700}
+.num input{flex:1;min-width:0;width:100%;border:0;background:transparent;color:var(--azul);font-size:24px;font-weight:700;padding:10px 6px;outline:0}
+.passo{width:54px;border:2px solid var(--verde);background:#fff;color:var(--verde);border-radius:10px;font-size:28px;font-weight:700;cursor:pointer;line-height:1}
+.passo:active{background:var(--verde-cl)}
+
+/* Botões de escolha */
+.opcoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.opcoes button{flex:1 1 calc(33% - 8px);min-width:84px;min-height:48px;border:2px solid var(--grade);background:#fff;color:var(--texto);border-radius:10px;font-weight:600;cursor:pointer;padding:6px 8px}
+.opcoes button.on{background:var(--verde);border-color:var(--verde);color:#fff}
+.opcoes button:active{transform:scale(.97)}
+.opcoes.q4 button{flex-basis:calc(25% - 8px);min-width:70px}
+.campo input[type=date]{width:100%;min-height:50px;border:2px solid #e6dca0;background:var(--entrada);color:var(--azul);font-size:20px;font-weight:700;border-radius:10px;padding:0 12px}
+
+/* Botões grandes de ação */
+.acoes{display:flex;gap:10px;flex-wrap:wrap}
+.acoes button{flex:1;min-height:52px;border-radius:10px;border:2px solid var(--verde);background:#fff;color:var(--verde-esc);font-weight:700;cursor:pointer;padding:0 14px}
+.acoes button.cheio{background:var(--verde);color:#fff}
 
 /* Resumo */
-.resumo td.num{text-align:right;padding:0 8px;font-variant-numeric:tabular-nums}
-.resumo tr.sub td.rot{padding-left:22px;color:var(--suave)}
-.resumo tr.sub td.num{color:var(--suave)}
-.resumo tr.tot td{font-weight:700;background:var(--verde-cl)}
-.resumo tr.big td{font-weight:800;background:var(--verde);color:#fff;height:38px;font-size:17px}
-.resumo tr.neg td.num{color:#b3261e}
-.aviso{margin-top:8px;color:var(--suave);font-size:12px}
+table{border-collapse:collapse;width:100%}
+.resumo td{padding:11px 14px;border-top:1px solid #ececec}
+.resumo tr:first-child td{border-top:0}
+.resumo td:last-child{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.resumo tr.verde td{background:var(--verde-cl)}
+.resumo tr.neg td:last-child{color:#b3261e}
+.aviso{color:var(--suave);font-size:14px;margin:6px 4px 0}
 
 /* Evolução */
-.rolagem{max-height:calc(100vh - 250px);min-height:300px;overflow:auto;border:1px solid var(--grade)}
-.evo thead th{position:sticky;top:0;z-index:2}
-.evo thead tr.t2 th{top:26px;background:var(--verde);color:#fff;font-weight:700;font-size:13px}
-.evo td{padding:0 8px;text-align:right;font-variant-numeric:tabular-nums}
-.evo td:first-child,.evo td:nth-child(2){text-align:left}
+.evo-wrap{background:#fff;border:1px solid var(--grade);border-radius:10px;overflow:hidden}
+.evo th{background:var(--verde);color:#fff;font-size:13px;padding:9px 8px;text-align:right;position:sticky;top:0}
+.evo th:first-child{text-align:left}
+.evo td{padding:9px 8px;border-top:1px solid #ececec;text-align:right;font-size:15px;font-variant-numeric:tabular-nums}
+.evo td:first-child{text-align:left;font-weight:600;line-height:1.2}
+.evo td:first-child small{display:block;font-weight:400;color:var(--suave);font-size:12px}
 .evo tbody tr:nth-child(even) td{background:#fafafa}
-.evo tbody tr:hover td{background:var(--verde-cl)}
-.evo{table-layout:auto;min-width:760px}
+.evo td:last-child{font-weight:700}
 
 /* Gráfico */
-.graf{position:relative;border:1px solid var(--grade);background:#fff}
-canvas{display:block;width:100%;height:420px}
-.dica{position:absolute;pointer-events:none;background:#222;color:#fff;font-size:12px;padding:6px 9px;border-radius:4px;display:none;white-space:nowrap}
-.legenda{display:flex;gap:18px;padding:8px 4px;font-size:13px;flex-wrap:wrap}
-.legenda i{display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-1px}
+.graf{position:relative;background:#fff;border:1px solid var(--grade);border-radius:10px;overflow:hidden}
+canvas{display:block;width:100%;height:320px;touch-action:pan-y}
+.legenda{display:flex;gap:16px;flex-wrap:wrap;font-size:15px;margin:2px 4px 10px}
+.legenda i{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:6px;vertical-align:-2px}
+.dica{position:absolute;top:8px;pointer-events:none;background:#222;color:#fff;font-size:14px;padding:8px 10px;border-radius:8px;display:none;white-space:nowrap}
 
-/* Abas de baixo */
-.abas{background:#f0f0f0;border-top:1px solid var(--grade);display:flex;padding:0 8px;position:sticky;bottom:0}
-.abas button{border:0;background:transparent;padding:8px 18px;cursor:pointer;color:var(--suave);border-top:3px solid transparent}
-.abas button.ativa{background:#fff;color:var(--verde-esc);font-weight:700;border-top-color:var(--verde)}
-.abas button:hover:not(.ativa){background:#e4e4e4}
+/* Abas fixas embaixo */
+.abas{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#fff;border-top:1px solid var(--grade);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+.abas button{flex:1;border:0;background:transparent;min-height:62px;font-size:15px;font-weight:600;color:var(--suave);cursor:pointer;border-top:4px solid transparent}
+.abas button b{display:block;font-size:22px;line-height:1.1}
+.abas button.ativa{color:var(--verde-esc);border-top-color:var(--verde);background:var(--verde-cl)}
 
-@media print{
-  .faixa,.formula,.abas,.titulo{display:none}
-  .aba{display:block!important;page-break-inside:avoid}
-  .rolagem{max-height:none;overflow:visible}
-  body{background:#fff}
-}
+@media(min-width:900px){.pagina{max-width:760px}}
 </style>
 </head>
 <body>
 
-<div class="titulo"><span class="logo">X</span><b>Juros Compostos.xlsx</b><span style="opacity:.8">— Calculadora</span></div>
+<header class="topo">
+  <div class="linha1"><span>Valor final (líquido)</span><span id="prazoTopo"></span></div>
+  <div class="valor" id="vFinal">R$ 0,00</div>
+  <div class="sub" id="vSub"></div>
+</header>
 
-<div class="faixa">
-  <button id="bCsv" title="Baixa a tabela para abrir no Excel">Exportar para Excel (CSV)</button>
-  <button id="bPrint">Imprimir</button>
-  <button id="bLimpar" title="Volta todos os campos ao exemplo inicial">Restaurar exemplo</button>
-  <span class="sep"></span>
-  <label for="exibir">Tabela por:</label>
-  <select id="exibir">
-    <option value="dia">Dia</option><option value="semana">Semana</option>
-    <option value="mes" selected>Mês</option><option value="ano">Ano</option>
-  </select>
-</div>
+<div class="pagina">
 
-<div class="formula"><div class="nome" id="nome">B3</div><div class="fx">fx</div><div class="txt" id="fxtxt">Clique em uma célula amarela e mude o valor. O resultado atualiza sozinho.</div></div>
-
-<main>
   <!-- ABA 1 -->
   <section class="aba ativa" id="aba1">
-    <div class="layout">
-      <div>
-        <table class="grade" id="params"></table>
+
+    <div class="cartao">
+      <h2>CAPITAL E TAXA</h2>
+      <div class="campo">
+        <label for="capital">Quanto você já tem (capital inicial)</label>
+        <div class="num"><button class="passo" data-alvo="capital" data-passo="-1000" aria-label="menos">−</button>
+          <div class="caixa"><span class="pref">R$</span><input id="capital" type="number" inputmode="decimal" min="0" step="any"></div>
+          <button class="passo" data-alvo="capital" data-passo="1000" aria-label="mais">+</button></div>
       </div>
-      <div>
-        <table class="grade resumo" id="resumo"></table>
-        <p class="aviso" id="aviso"></p>
+      <div class="campo">
+        <label for="taxa">Taxa de juros</label>
+        <div class="num"><button class="passo" data-alvo="taxa" data-passo="-0.1" aria-label="menos">−</button>
+          <div class="caixa"><input id="taxa" type="number" inputmode="decimal" min="0" step="any"><span class="suf">%</span></div>
+          <button class="passo" data-alvo="taxa" data-passo="0.1" aria-label="mais">+</button></div>
+        <div class="opcoes" data-grupo="taxaPer">
+          <button data-v="dia">ao dia</button><button data-v="semana">à semana</button><button data-v="mes">ao mês</button>
+          <button data-v="trimestre">ao trimestre</button><button data-v="semestre">ao semestre</button><button data-v="ano">ao ano</button>
+        </div>
       </div>
+      <div class="campo">
+        <span class="rot">Os juros são somados</span>
+        <div class="opcoes" data-grupo="cap">
+          <button data-v="dia">todo dia</button><button data-v="semana">toda semana</button><button data-v="mes">todo mês</button>
+          <button data-v="trimestre">todo trimestre</button><button data-v="semestre">todo semestre</button><button data-v="ano">todo ano</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cartao">
+      <h2>PRAZO</h2>
+      <div class="campo">
+        <label for="prazo">Por quanto tempo</label>
+        <div class="num"><button class="passo" data-alvo="prazo" data-passo="-1" aria-label="menos">−</button>
+          <div class="caixa"><input id="prazo" type="number" inputmode="decimal" min="0" step="any"></div>
+          <button class="passo" data-alvo="prazo" data-passo="1" aria-label="mais">+</button></div>
+        <div class="opcoes q4" data-grupo="prazoUn">
+          <button data-v="dias">dias</button><button data-v="semanas">semanas</button><button data-v="meses">meses</button><button data-v="anos">anos</button>
+        </div>
+      </div>
+      <div class="campo">
+        <label for="inicio">Data de início <span class="dica-txt">Só para mostrar as datas na tabela.</span></label>
+        <input id="inicio" type="date">
+      </div>
+    </div>
+
+    <div class="cartao">
+      <h2>APORTES (DEPÓSITOS REGULARES)</h2>
+      <div class="campo">
+        <label for="aporte">Quanto você vai depositar <span class="dica-txt">Deixe 0 se não vai depositar mais nada.</span></label>
+        <div class="num"><button class="passo" data-alvo="aporte" data-passo="-100" aria-label="menos">−</button>
+          <div class="caixa"><span class="pref">R$</span><input id="aporte" type="number" inputmode="decimal" min="0" step="any"></div>
+          <button class="passo" data-alvo="aporte" data-passo="100" aria-label="mais">+</button></div>
+        <div class="opcoes" data-grupo="aporteFreq">
+          <button data-v="dia">todo dia</button><button data-v="semana">toda semana</button><button data-v="quinzena">a cada 15 dias</button>
+          <button data-v="mes">todo mês</button><button data-v="trimestre">todo trimestre</button><button data-v="semestre">todo semestre</button>
+          <button data-v="ano">todo ano</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cartao">
+      <h2>IMPOSTO DE RENDA</h2>
+      <div class="campo">
+        <span class="rot">Descontar imposto sobre o lucro? <span class="dica-txt">Regressiva: 22,5% até 180 dias, 20% até 360, 17,5% até 720 e 15% acima.</span></span>
+        <div class="opcoes" data-grupo="ir">
+          <button data-v="nenhum">Não</button><button data-v="regressivo">Tabela regressiva</button><button data-v="fixo">Percentual fixo</button>
+        </div>
+      </div>
+      <div class="campo" id="campoIrFixo">
+        <label for="irFixo">Percentual do imposto</label>
+        <div class="num"><button class="passo" data-alvo="irFixo" data-passo="-1" aria-label="menos">−</button>
+          <div class="caixa"><input id="irFixo" type="number" inputmode="decimal" min="0" step="any"><span class="suf">%</span></div>
+          <button class="passo" data-alvo="irFixo" data-passo="1" aria-label="mais">+</button></div>
+      </div>
+    </div>
+
+    <div class="cartao">
+      <h2>RESUMO</h2>
+      <table class="resumo" id="resumo"></table>
+    </div>
+    <p class="aviso" id="aviso"></p>
+
+    <div class="acoes">
+      <button class="cheio" id="bVer">Ver tabela mês a mês</button>
+      <button id="bLimpar">Restaurar exemplo</button>
     </div>
   </section>
 
   <!-- ABA 2 -->
   <section class="aba" id="aba2">
-    <div class="rolagem">
-      <table class="grade evo" id="evo">
-        <thead>
-          <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th></tr>
-          <tr class="t2"><th>Período</th><th>Data</th><th>Aportes</th><th>Juros</th><th>Taxas</th><th>Total investido</th><th>Juros acumulados</th><th>Saldo</th></tr>
-        </thead>
+    <div class="cartao" style="margin-bottom:12px">
+      <div class="campo">
+        <span class="rot">Mostrar a tabela por</span>
+        <div class="opcoes q4" data-grupo="exibir">
+          <button data-v="dia">Dia</button><button data-v="semana">Semana</button><button data-v="mes">Mês</button><button data-v="ano">Ano</button>
+        </div>
+      </div>
+    </div>
+    <div class="acoes" style="margin-bottom:12px"><button id="bCsv">Baixar para o Excel (CSV)</button></div>
+    <div class="evo-wrap">
+      <table class="evo" id="evo">
+        <thead><tr><th>Período</th><th>Investido</th><th>Juros</th><th>Saldo</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -144,16 +211,17 @@ canvas{display:block;width:100%;height:420px}
 
   <!-- ABA 3 -->
   <section class="aba" id="aba3">
-    <div class="legenda"><span><i style="background:#2f6fd0"></i>Total investido (do seu bolso)</span><span><i style="background:#3aa76d"></i>Juros ganhos</span></div>
+    <div class="legenda"><span><i style="background:#2f6fd0"></i>Do seu bolso</span><span><i style="background:#3aa76d"></i>Juros ganhos</span></div>
     <div class="graf"><canvas id="canvas"></canvas><div class="dica" id="dica"></div></div>
+    <p class="aviso">Toque no gráfico para ver os valores de cada momento.</p>
   </section>
-</main>
-
-<div class="abas">
-  <button class="ativa" data-aba="aba1">Calculadora</button>
-  <button data-aba="aba2">Evolução</button>
-  <button data-aba="aba3">Gráfico</button>
 </div>
+
+<nav class="abas">
+  <button class="ativa" data-aba="aba1"><b>🧮</b>Calcular</button>
+  <button data-aba="aba2"><b>📋</b>Tabela</button>
+  <button data-aba="aba3"><b>📈</b>Gráfico</button>
+</nav>
 
 <script src="calculo.js"></script>
 <script>
@@ -161,86 +229,34 @@ canvas{display:block;width:100%;height:420px}
   var $ = function(id){ return document.getElementById(id); };
   var BRL = function(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); };
   var PCT = function(v){ return (v*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' %'; };
-
-  var PER_TAXA = [['dia','ao dia'],['semana','à semana'],['mes','ao mês'],['bimestre','ao bimestre'],['trimestre','ao trimestre'],['semestre','ao semestre'],['ano','ao ano']];
-  var PER_CAP  = [['dia','diária'],['semana','semanal'],['mes','mensal'],['trimestre','trimestral'],['semestre','semestral'],['ano','anual']];
-  var PER_APO  = [['dia','diário'],['semana','semanal'],['quinzena','quinzenal'],['mes','mensal'],['bimestre','bimestral'],['trimestre','trimestral'],['semestre','semestral'],['ano','anual']];
-
   function hoje(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
 
-  // Cada linha: r = rótulo, n = campo numérico, s = lista de opções, nota = explicação
-  var SECOES = [
-   {t:'CAPITAL, TAXA E PRAZO', l:[
-    {r:'Capital inicial (R$)', n:{id:'capital',v:10000}, nota:'Quanto você já tem para começar. Pode ser zero.'},
-    {r:'Taxa de juros (%)', n:{id:'taxa',v:1}, s:{id:'taxaPer',op:PER_TAXA,v:'mes'}, nota:'A taxa e de quanto em quanto tempo ela vale (ex.: 1% ao mês).'},
-    {r:'Juros são somados (capitalização)', s:{id:'cap',op:PER_CAP,v:'mes'}, nota:'De quanto em quanto tempo os juros entram no saldo e passam a render também.'},
-    {r:'Tipo de taxa', s:{id:'tipo',op:[['efetiva','Efetiva (equivalente)'],['nominal','Nominal (proporcional)']],v:'efetiva'}, nota:'Efetiva: 12% ao ano rende 12% no ano. Nominal: 12% ao ano capitalizado por mês = 1% ao mês.'},
-    {r:'Prazo', n:{id:'prazo',v:10}, s:{id:'prazoUn',op:[['dias','dias'],['semanas','semanas'],['meses','meses'],['anos','anos']],v:'anos'}, nota:'Por quanto tempo o dinheiro fica aplicado.'},
-    {r:'Data de início', d:{id:'inicio',v:hoje()}, nota:'Só serve para mostrar as datas na tabela.'}
-   ]},
-   {t:'APORTES (DEPÓSITOS REGULARES)', l:[
-    {r:'Valor do aporte (R$)', n:{id:'aporte',v:500}, s:{id:'aporteFreq',op:PER_APO,v:'mes'}, nota:'Quanto você coloca e com que frequência. Zero = sem aportes.'},
-    {r:'Aporte feito no', s:{id:'momento',op:[['fim','fim do período'],['inicio','início do período']],v:'fim'}, nota:'No início do período o aporte já rende desde o primeiro dia.'},
-    {r:'Reajuste anual do aporte (%)', n:{id:'reajuste',v:0}, nota:'Quanto o aporte aumenta a cada 12 meses (ex.: acompanhar o salário).'}
-   ]},
-   {t:'TAXAS DE COBRANÇA (SE FOR TERCEIRIZADO)', l:[
-    {r:'Taxa de administração (% ao ano)', n:{id:'admin',v:0}, nota:'Cobrada todo mês sobre o saldo (1/12 da taxa ao ano). Típica de fundos e gestoras.'},
-    {r:'Taxa de performance (% sobre o lucro)', n:{id:'performance',v:0}, nota:'Cobrada no final sobre o lucro. Ex.: 20% do que passou do valor investido.'},
-    {r:'Taxa de entrada (% de cada depósito)', n:{id:'entrada',v:0}, nota:'Comissão sobre o capital inicial e sobre cada aporte.'},
-    {r:'Taxa fixa por aporte (R$)', n:{id:'fixaAporte',v:0}, nota:'Valor em reais cobrado em cada aporte.'},
-    {r:'Taxa fixa mensal (R$)', n:{id:'fixaMes',v:0}, nota:'Mensalidade cobrada todo mês (conta, plataforma, assessor).'}
-   ]},
-   {t:'IMPOSTO, INFLAÇÃO E META', l:[
-    {r:'Imposto de renda', n:{id:'irFixo',v:15}, s:{id:'ir',op:[['nenhum','Nenhum'],['regressivo','Tabela regressiva'],['fixo','Alíquota fixa (%)']],v:'nenhum'}, nota:'Regressiva: 22,5% até 180 dias, 20% até 360, 17,5% até 720, 15% acima. Alíquota fixa usa o número ao lado.'},
-    {r:'Inflação (% ao ano)', n:{id:'inflacao',v:0}, nota:'Mostra quanto o resultado vale em dinheiro de hoje.'},
-    {r:'Meta (R$)', n:{id:'meta',v:0}, nota:'Opcional: diz em quanto tempo você chega nesse valor.'}
-   ]}
-  ];
-  var IDS_NUM=[], IDS_SEL=[], PADRAO={};
+  var NUMS=['capital','taxa','prazo','aporte','irFixo'];
+  var GRUPOS=['taxaPer','cap','prazoUn','aporteFreq','ir','exibir'];
+  var PADRAO={capital:10000,taxa:1,prazo:10,aporte:500,irFixo:15,taxaPer:'mes',cap:'mes',prazoUn:'anos',aporteFreq:'mes',ir:'nenhum',exibir:'mes',inicio:hoje()};
+  var E={}; // estado dos botões de escolha
 
-  function montarParametros(){
-    var t=$('params'), h='<thead><tr><th class="rn"></th><th id="hA">A</th><th id="hB">B</th><th id="hC">C</th><th class="col-nota" id="hD">D</th></tr></thead><tbody>';
-    var linha=1;
-    SECOES.forEach(function(sec){
-      h+='<tr class="sec"><th class="rn" data-r="'+linha+'">'+linha+'</th><td colspan="4">'+sec.t+'</td></tr>'; linha++;
-      sec.l.forEach(function(x){
-        h+='<tr><th class="rn" data-r="'+linha+'">'+linha+'</th><td class="rot">'+x.r+'</td>';
-        var cB='<td class="vazio"></td>', cC='<td class="vazio"></td>';
-        if(x.n){ IDS_NUM.push(x.n.id); PADRAO[x.n.id]=x.n.v;
-          cB='<td class="cel" data-c="B" data-r="'+linha+'" data-nota="'+x.nota+'"><input type="number" step="any" min="0" inputmode="decimal" id="'+x.n.id+'" value="'+x.n.v+'"></td>'; }
-        if(x.d){ IDS_NUM.push(x.d.id); PADRAO[x.d.id]=x.d.v;
-          cB='<td class="cel" data-c="B" data-r="'+linha+'" data-nota="'+x.nota+'"><input type="date" id="'+x.d.id+'" value="'+x.d.v+'"></td>'; }
-        if(x.s){ IDS_SEL.push(x.s.id); PADRAO[x.s.id]=x.s.v;
-          var o=x.s.op.map(function(p){return '<option value="'+p[0]+'"'+(p[0]===x.s.v?' selected':'')+'>'+p[1]+'</option>';}).join('');
-          var cel='<td class="cel" data-c="C" data-r="'+linha+'" data-nota="'+x.nota+'"><select id="'+x.s.id+'">'+o+'</select></td>';
-          if(x.n||x.d) cC=cel; else { cB=cel.replace('data-c="C"','data-c="B"'); cC='<td class="vazio"></td>'; } }
-        h+=cB+cC+'<td class="nota col-nota" title="'+x.nota+'">'+x.nota+'</td></tr>'; linha++;
-      });
-    });
-    t.innerHTML=h+'</tbody>';
+  function marcarGrupo(g){
+    var bs=document.querySelectorAll('[data-grupo="'+g+'"] button');
+    for(var i=0;i<bs.length;i++) bs[i].classList.toggle('on',bs[i].getAttribute('data-v')===E[g]);
   }
-
-  // Seleção de célula (nome da célula + explicação na barra de fórmulas)
-  function selecionar(td){
-    var ant=document.querySelectorAll('#params .sel'); for(var i=0;i<ant.length;i++) ant[i].classList.remove('sel');
-    td.classList.add('sel');
-    var c=td.getAttribute('data-c'), r=td.getAttribute('data-r');
-    $('h'+c).classList.add('sel');
-    var rn=document.querySelector('#params th.rn[data-r="'+r+'"]'); if(rn) rn.classList.add('sel');
-    $('nome').textContent=c+r;
-    var rot=td.parentNode.querySelector('.rot').textContent;
-    $('fxtxt').textContent=rot+' — '+td.getAttribute('data-nota');
+  function aplicar(p){
+    NUMS.forEach(function(id){ if(p[id]!==undefined) $(id).value=p[id]; });
+    if(p.inicio) $('inicio').value=p.inicio;
+    GRUPOS.forEach(function(g){ if(p[g]!==undefined) E[g]=p[g]; marcarGrupo(g); });
+    $('campoIrFixo').style.display=E.ir==='fixo'?'block':'none';
   }
 
   function ler(){
-    var p={}, n=function(id){ var v=parseFloat($(id).value); return isFinite(v)&&v>=0?v:0; };
-    IDS_NUM.forEach(function(id){ if(id!=='inicio') p[id]=n(id); });
-    IDS_SEL.forEach(function(id){ p[id]=$(id).value; });
-    p.exibir=$('exibir').value; p.inicio=$('inicio').value;
+    var n=function(id){ var v=parseFloat($(id).value); return isFinite(v)&&v>=0?v:0; };
+    var p={ taxa:n('taxa'), capital:n('capital'), prazo:n('prazo'), aporte:n('aporte'), irFixo:n('irFixo'),
+      taxaPer:E.taxaPer, cap:E.cap, prazoUn:E.prazoUn, aporteFreq:E.aporteFreq, ir:E.ir, exibir:E.exibir,
+      inicio:$('inicio').value,
+      tipo:'efetiva', momento:'fim', reajuste:0, admin:0, performance:0, entrada:0, fixaAporte:0, fixaMes:0, inflacao:0, meta:0 };
     return p;
   }
 
-  var ULTIMO=null, ULTIMOP=null;
+  var ULTIMO=null, ULTIMOP=null, ROT={dia:'Dia',semana:'Semana',mes:'Mês',ano:'Ano'};
   function dataDe(p,dia){
     var b=p.inicio?Date.parse(p.inicio+'T00:00:00Z'):NaN; if(isNaN(b)) return '';
     return new Date(b+dia*86400000).toLocaleDateString('pt-BR',{timeZone:'UTC'});
@@ -251,38 +267,31 @@ canvas{display:block;width:100%;height:420px}
     return t.join(', ');
   }
 
-  function desenharResumo(r,p){
-    var L=1, h='<thead><tr><th class="rn"></th><th>A</th><th>B</th></tr></thead><tbody>';
-    function lin(cls,rot,val){ h+='<tr class="'+cls+'"><th class="rn">'+(L++)+'</th><td class="rot">'+rot+'</td><td class="num">'+val+'</td></tr>'; }
-    h+='<tr class="sec"><th class="rn">'+(L++)+'</th><td colspan="2">RESULTADO</td></tr>';
+  function desenharResumo(r){
+    var h='';
+    function lin(cls,rot,val){ h+='<tr class="'+cls+'"><td>'+rot+'</td><td>'+val+'</td></tr>'; }
     lin('','Total que você investiu',BRL(r.investido));
     lin('','Juros ganhos',BRL(r.jurosBrutos));
-    lin('neg','Taxas de cobrança',r.taxasTotal>0?'− '+BRL(r.taxasTotal):BRL(0));
-    if(r.taxaAdmin>0) lin('sub neg','Administração','− '+BRL(r.taxaAdmin));
-    if(r.taxaEntrada>0) lin('sub neg','Entrada / fixa por aporte','− '+BRL(r.taxaEntrada));
-    if(r.taxaFixaMes>0) lin('sub neg','Fixa mensal','− '+BRL(r.taxaFixaMes));
-    if(r.taxaPerf>0) lin('sub neg','Performance','− '+BRL(r.taxaPerf));
-    lin('tot','Saldo antes do imposto',BRL(r.saldoBruto-r.taxaPerf));
-    lin('neg','Imposto de renda'+(r.aliqIR>0?' ('+(r.aliqIR*100).toLocaleString('pt-BR')+'%)':''),r.ir>0?'− '+BRL(r.ir):BRL(0));
-    lin('big','VALOR FINAL (líquido)',BRL(r.liquido));
-    if(p.inflacao>0) lin('tot','Em dinheiro de hoje (sem inflação)',BRL(r.real));
+    if(r.ir>0||r.aliqIR>0) lin('neg','Imposto de renda ('+(r.aliqIR*100).toLocaleString('pt-BR')+'%)','− '+BRL(r.ir));
+    lin('verde','Valor final (líquido)',BRL(r.liquido));
     lin('','Rentabilidade total',PCT(r.rentab));
-    lin('','Taxa por capitalização',PCT(r.taxaPorCap));
     lin('','Prazo total',duracao(r.N));
-    if(p.meta>0) lin('tot','Meta de '+BRL(p.meta), r.metaDia===null?'não atinge no prazo':'em '+duracao(r.metaDia));
-    $('resumo').innerHTML=h+'</tbody>';
+    $('resumo').innerHTML=h;
     $('aviso').textContent=r.aviso;
+    $('vFinal').textContent=BRL(r.liquido);
+    $('vSub').textContent='Investido '+BRL(r.investido)+' · Juros '+BRL(r.jurosBrutos);
+    $('prazoTopo').textContent=duracao(r.N);
   }
 
   function desenharTabela(r,p){
-    var h=[], rot={dia:'Dia',semana:'Semana',mes:'Mês',ano:'Ano'}[r.exibir];
+    var h=[], rot=ROT[r.exibir];
     r.rows.forEach(function(x){
-      h.push('<tr><td>'+(x.per===0?'Início':rot+' '+x.per)+'</td><td>'+dataDe(p,x.dia)+'</td><td>'+BRL(x.aporte)+'</td><td>'+BRL(x.juros)+'</td><td>'+BRL(x.taxas)+'</td><td>'+BRL(x.inv)+'</td><td>'+BRL(x.jurosAc)+'</td><td><b>'+BRL(x.bal)+'</b></td></tr>');
+      h.push('<tr><td>'+(x.per===0?'Início':rot+' '+x.per)+'<small>'+dataDe(p,x.dia)+'</small></td><td>'+BRL(x.inv)+'</td><td>'+BRL(x.jurosAc)+'</td><td>'+BRL(x.bal)+'</td></tr>');
     });
     $('evo').querySelector('tbody').innerHTML=h.join('');
   }
 
-  // Gráfico de áreas empilhadas (investido + juros)
+  // Gráfico de áreas empilhadas
   var PTS=[];
   function abrev(v){ var a=Math.abs(v); if(a>=1e9) return (v/1e9).toLocaleString('pt-BR',{maximumFractionDigits:1})+' bi'; if(a>=1e6) return (v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi'; if(a>=1e3) return (v/1e3).toLocaleString('pt-BR',{maximumFractionDigits:0})+' mil'; return v.toFixed(0); }
   function desenharGrafico(){
@@ -294,18 +303,18 @@ canvas{display:block;width:100%;height:420px}
     var rows=ULTIMO.rows, N=ULTIMO.N, mx=0;
     rows.forEach(function(x){ if(x.bal>mx) mx=x.bal; if(x.inv>mx) mx=x.inv; });
     if(mx<=0) mx=1;
-    var passo=Math.pow(10,Math.floor(Math.log10(mx/4))); var u=[1,2,2.5,5,10]; var s=passo;
+    var passo=Math.pow(10,Math.floor(Math.log10(mx/4))), u=[1,2,2.5,5,10], s=passo;
     for(var i=0;i<u.length;i++){ if(mx/(passo*u[i])<=5){ s=passo*u[i]; break; } }
     var topo=Math.ceil(mx/s)*s;
-    var m={l:62,r:14,t:14,b:30}, w=W-m.l-m.r, hh=H-m.t-m.b;
+    var m={l:54,r:12,t:12,b:28}, w=W-m.l-m.r, hh=H-m.t-m.b;
     var X=function(d){ return m.l+d/N*w; }, Y=function(v){ return m.t+hh-v/topo*hh; };
-    c.font='12px Calibri,Segoe UI,sans-serif'; c.fillStyle='#6b6b6b'; c.strokeStyle='#e3e3e3'; c.lineWidth=1;
+    c.font='13px Calibri,Segoe UI,sans-serif'; c.fillStyle='#6b6b6b'; c.strokeStyle='#e3e3e3'; c.lineWidth=1;
     c.textAlign='right'; c.textBaseline='middle';
-    for(var v=0;v<=topo+1e-9;v+=s){ var y=Math.round(Y(v))+.5; c.beginPath(); c.moveTo(m.l,y); c.lineTo(W-m.r,y); c.stroke(); c.fillText(abrev(v),m.l-8,y); }
+    for(var v=0;v<=topo+1e-9;v+=s){ var y=Math.round(Y(v))+.5; c.beginPath(); c.moveTo(m.l,y); c.lineTo(W-m.r,y); c.stroke(); c.fillText(abrev(v),m.l-6,y); }
     c.textAlign='center'; c.textBaseline='top';
-    var anos=N/365, tick=anos>=1.5, qt=tick?Math.max(1,Math.ceil(anos/8)):0;
-    if(tick){ for(var a=0;a<=anos;a+=qt){ c.fillText(a+' a',X(a*365),H-m.b+8); } }
-    else { for(var k=0;k<=4;k++){ var dd=N*k/4; c.fillText(Math.round(dd)+' d',X(dd),H-m.b+8); } }
+    var anos=N/365;
+    if(anos>=1.5){ var qt=Math.max(1,Math.ceil(anos/4)); for(var a=0;a<=anos;a+=qt) c.fillText(a+' a',X(a*365),H-m.b+8); }
+    else { for(var k=0;k<=3;k++){ var dd=N*k/3; c.fillText(Math.round(dd)+' d',X(dd),H-m.b+8); } }
     function area(topFn,base,cor){
       c.beginPath(); c.moveTo(X(rows[0].dia),Y(base(rows[0])));
       rows.forEach(function(x){ c.lineTo(X(x.dia),Y(topFn(x))); });
@@ -320,31 +329,33 @@ canvas{display:block;width:100%;height:420px}
     var cv=$('canvas'), b=cv.getBoundingClientRect(), mx=e.clientX-b.left, best=null, dm=1e9;
     PTS.forEach(function(p){ var d=Math.abs(p.x-mx); if(d<dm){dm=d;best=p;} });
     var t=$('dica'); if(!best){ t.style.display='none'; return; }
-    var r=best.r, rot={dia:'Dia',semana:'Semana',mes:'Mês',ano:'Ano'}[ULTIMO.exibir];
-    t.innerHTML='<b>'+(r.per===0?'Início':rot+' '+r.per)+'</b> · '+dataDe(ULTIMOP,r.dia)+'<br>Investido: '+BRL(r.inv)+'<br>Juros: '+BRL(r.jurosAc)+'<br>Saldo: '+BRL(r.bal);
+    var r=best.r;
+    t.innerHTML='<b>'+(r.per===0?'Início':ROT[ULTIMO.exibir]+' '+r.per)+'</b> · '+dataDe(ULTIMOP,r.dia)+'<br>Investido: '+BRL(r.inv)+'<br>Juros: '+BRL(r.jurosAc)+'<br>Saldo: '+BRL(r.bal);
     t.style.display='block';
-    var left=Math.min(best.x+12,cv.clientWidth-t.offsetWidth-6); t.style.left=left+'px'; t.style.top='20px';
+    t.style.left=Math.max(4,Math.min(best.x+10,cv.clientWidth-t.offsetWidth-4))+'px';
   }
 
   var guardarT=null;
   function recalcular(){
     var p=ler(); ULTIMOP=p; ULTIMO=simular(p);
-    desenharResumo(ULTIMO,p); desenharTabela(ULTIMO,p);
+    desenharResumo(ULTIMO); desenharTabela(ULTIMO,p);
     if($('aba3').classList.contains('ativa')) desenharGrafico();
     clearTimeout(guardarT); guardarT=setTimeout(function(){
-      try{ localStorage.setItem('jurosCompostos',JSON.stringify(p)); }catch(e){}
+      var s={inicio:p.inicio}; NUMS.forEach(function(id){ s[id]=p[id]; }); GRUPOS.forEach(function(g){ s[g]=E[g]; });
+      try{ localStorage.setItem('jurosCompostos2',JSON.stringify(s)); }catch(e){}
     },300);
   }
 
-  function aplicar(p){
-    IDS_NUM.concat(IDS_SEL).forEach(function(id){ if(p[id]!==undefined) $(id).value=p[id]; });
-    if(p.exibir) $('exibir').value=p.exibir;
+  function irParaAba(id){
+    document.querySelectorAll('.abas button').forEach(function(b){ b.classList.toggle('ativa',b.getAttribute('data-aba')===id); });
+    document.querySelectorAll('.aba').forEach(function(a){ a.classList.toggle('ativa',a.id===id); });
+    window.scrollTo(0,0);
+    if(id==='aba3') desenharGrafico();
   }
 
   function csv(){
     if(!ULTIMO) return;
-    var rot={dia:'Dia',semana:'Semana',mes:'Mês',ano:'Ano'}[ULTIMO.exibir];
-    var f=function(v){ return v.toFixed(2).replace('.',','); };
+    var rot=ROT[ULTIMO.exibir], f=function(v){ return v.toFixed(2).replace('.',','); };
     var l=['Período;Data;Aportes;Juros;Taxas;Total investido;Juros acumulados;Saldo'];
     ULTIMO.rows.forEach(function(x){ l.push([x.per===0?'Início':rot+' '+x.per,dataDe(ULTIMOP,x.dia),f(x.aporte),f(x.juros),f(x.taxas),f(x.inv),f(x.jurosAc),f(x.bal)].join(';')); });
     l.push(''); l.push('Valor final (líquido);'+f(ULTIMO.liquido));
@@ -354,25 +365,25 @@ canvas{display:block;width:100%;height:420px}
   }
 
   // Início
-  montarParametros();
-  try{ var salvo=JSON.parse(localStorage.getItem('jurosCompostos')||'null'); if(salvo) aplicar(salvo); }catch(e){}
+  aplicar(PADRAO);
+  try{ var salvo=JSON.parse(localStorage.getItem('jurosCompostos2')||'null'); if(salvo) aplicar(salvo); }catch(e){}
 
-  $('params').addEventListener('focusin',function(e){ var td=e.target.closest('td.cel'); if(td) selecionar(td); });
-  $('params').addEventListener('input',recalcular);
-  $('params').addEventListener('change',recalcular);
-  $('exibir').addEventListener('change',recalcular);
-  $('bCsv').addEventListener('click',csv);
-  $('bPrint').addEventListener('click',function(){ window.print(); });
-  $('bLimpar').addEventListener('click',function(){ if(confirm('Voltar todos os campos ao exemplo inicial?')){ aplicar(PADRAO); $('exibir').value='mes'; recalcular(); } });
-  document.querySelectorAll('.abas button').forEach(function(b){
-    b.addEventListener('click',function(){
-      document.querySelectorAll('.abas button,.aba').forEach(function(x){ x.classList.remove('ativa'); });
-      b.classList.add('ativa'); $(b.getAttribute('data-aba')).classList.add('ativa');
-      if(b.getAttribute('data-aba')==='aba3') desenharGrafico();
-    });
+  document.addEventListener('click',function(e){
+    var op=e.target.closest('.opcoes button');
+    if(op){ var g=op.parentNode.getAttribute('data-grupo'); E[g]=op.getAttribute('data-v'); marcarGrupo(g);
+      if(g==='ir') $('campoIrFixo').style.display=E.ir==='fixo'?'block':'none'; recalcular(); return; }
+    var ps=e.target.closest('.passo');
+    if(ps){ var inp=$(ps.getAttribute('data-alvo')), v=parseFloat(inp.value); if(!isFinite(v)) v=0;
+      v=Math.max(0,Math.round((v+parseFloat(ps.getAttribute('data-passo')))*100)/100); inp.value=v; recalcular(); return; }
+    var ab=e.target.closest('.abas button'); if(ab) irParaAba(ab.getAttribute('data-aba'));
   });
-  $('canvas').addEventListener('mousemove',dica);
-  $('canvas').addEventListener('mouseleave',function(){ $('dica').style.display='none'; });
+  document.addEventListener('input',function(e){ if(e.target.matches('input')) recalcular(); });
+  $('bVer').addEventListener('click',function(){ irParaAba('aba2'); });
+  $('bCsv').addEventListener('click',csv);
+  $('bLimpar').addEventListener('click',function(){ if(confirm('Voltar todos os campos ao exemplo inicial?')){ aplicar(PADRAO); recalcular(); } });
+  var cv=$('canvas');
+  cv.addEventListener('pointermove',dica); cv.addEventListener('pointerdown',dica);
+  cv.addEventListener('pointerleave',function(){ $('dica').style.display='none'; });
   window.addEventListener('resize',desenharGrafico);
   recalcular();
 })();
